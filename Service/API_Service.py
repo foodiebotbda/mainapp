@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 # Alamat server utama
-MAIN_SERVER_URL = 'https://8cjrhv6h-8000.asse.devtunnels.ms/api/bot'  # Ganti dengan alamat server Flask utama Anda
+MAIN_SERVER_URL = 'https://8cjrhv6h-8000.asse.devtunnels.ms/send-message'  # Ganti dengan alamat server Flask utama Anda
 
 # Inisialisasi log chat
 chat_log = []
