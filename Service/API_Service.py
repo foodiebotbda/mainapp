@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 import requests
 
 app = Flask(__name__)
 
 # Alamat server utama
 MAIN_SERVER_URL = 'https://8cjrhv6h-8000.asse.devtunnels.ms/api/bot'  # Ganti dengan alamat server Flask utama Anda
+Database_URL = 'https://8cjrhv6h-8080.asse.devtunnels.ms/'
 
 # Inisialisasi log chat
 chat_log = []
@@ -41,6 +42,24 @@ def bot_api():
 @app.route('/api/bot/log', methods=['GET'])
 def get_chat_log():
     return jsonify(chat_log)
+
+# Teruskan permintaan API makanan ke layanan API makanan Anda
+# @app.route('/api/food/save_makanan', methods=['POST'])
+# def food_save_makanan():
+#     try:
+#         # Teruskan permintaan ke API makanan
+#         save_makanan = Database_URL + 'save_makanan'
+#         response = requests.post(save_makanan, data=request.form)
+
+#         if response.status_code == 200:
+#             return jsonify(response.json()), 200
+#         else:
+#             return jsonify({"error": f'{response.status_code} - {response.text}'}), response.status_code
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# Tambahkan rute API terkait makanan lainnya dengan cara yang sama...
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
