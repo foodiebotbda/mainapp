@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
 import traceback
 import DatabaseManager as dbs
+import os
 
 # Anda mungkin perlu mengimpor DatabaseManager Anda di sini
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = '../gambar/'
 
 # Inisialisasi objek DatabaseManager
 db_manager = dbs.DatabaseManager()  # Pastikan DatabaseManager diimpor dengan benar
@@ -14,9 +17,13 @@ def save_makanan():
     try:
         nama = request.form['nama']
         tempat = request.form['tempat']
-        image = request.files['gambar'].read()
+        image = request.files['gambar']
         harga = request.form['harga']
         kategori_ids = request.form.getlist('kategori_ids[]')
+
+        filename = image.filename
+        save_path = os.path.join(UPLOAD_FOLDER, filename)
+        image.save(save_path)
 
         success = db_manager.save_makanan(nama, tempat, image, harga, kategori_ids)
 

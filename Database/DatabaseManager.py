@@ -1,9 +1,9 @@
 import mysql.connector
 import hashlib
 import os
-import shutil
 
 class DatabaseManager:
+    
     def __init__(self):
         # Konfigurasi koneksi ke database MySQL
         self.connection = mysql.connector.connect(
@@ -11,18 +11,26 @@ class DatabaseManager:
             user="root",  # Ganti dengan nama pengguna Anda
             port=3306,
             password="12345",  # Ganti dengan kata sandi Anda
-            database="foodiebot"  # Ganti dengan nama database yang ingin Anda gunakan
+            database="foodiebot2"  # Ganti dengan nama database yang ingin Anda gunakan
         )
         self.cursor = self.connection.cursor()
 
     def hash_gambar(self, image_binary):
         # Menghitung hash dari gambar_binary
         return hashlib.md5(image_binary).hexdigest()
+    
+    def generate_unique_filename(filename):
+        import uuid
+        _, ext = os.path.splitext(filename)
+        unique_filename = str(uuid.uuid4()) + ext
+        
+        return unique_filename
 
     def save_makanan(self, nama, tempat, image, harga, kategori_ids):
         try:
             # Menghitung hash dari gambar
-            hash_gambar = self.hash_gambar(image)
+            image_binary = image.read()  # Membaca gambar sebagai biner
+            hash_gambar = self.hash_gambar(image_binary)
 
             self.cursor.execute("INSERT INTO Makanan (nama_makanan, tempat, gambar, harga) VALUES (%s, %s, %s, %s)",
                                 (nama, tempat, hash_gambar, harga))
@@ -34,23 +42,8 @@ class DatabaseManager:
                                     (id_kategori, id_makanan))
                 self.connection.commit()
 
-            # Menyimpan gambar ke direktori lokal
-            image_directory = "../gambar/"  # Ganti dengan direktori lokal yang Anda inginkan
-            if not os.path.exists(image_directory):
-                os.makedirs(image_directory)
-
-            # menyimpan ke direktori lokal dengan nama asli
-
-            # image_path = os.path.join(image_directory, image.filename)
-            # image.save(image_path)
-
-            # menyimpan ke direktori lokal dengan nama hash
-            image_path = os.path.join(image_directory, hash_gambar + '.jpg')
-            image.save(image_path)
-
-
             return True
-        except Exception as e:
+        except mysql.connector.Error as e:
             print("Error:", str(e))
             return False
 
@@ -60,7 +53,7 @@ class DatabaseManager:
             kategori_records = self.cursor.fetchall()
             kategori_options = [record[0] for record in kategori_records]
             return kategori_options
-        except Exception as e:
+        except mysql.connector.Error as e:
             print("Error:", str(e))
             return []
 
@@ -72,7 +65,7 @@ class DatabaseManager:
                 return result[0]
             else:
                 return None
-        except Exception as e:
+        except mysql.connector.Error as e:
             print("Error:", str(e))
             return None
 
@@ -83,9 +76,9 @@ class DatabaseManager:
         # Eksekusi pernyataan SQL untuk mencari makanan berdasarkan kata-kunci yang relevan
         query = f"""
             SELECT m.nama_makanan
-            FROM kategori_makanan AS km
-            JOIN kategori AS k ON km.id_kategori = k.id_kategori
-            JOIN makanan AS m ON km.id_makanan = m.id_makanan
+            FROM Kategori_Makanan AS km
+            JOIN Kategori AS k ON km.id_kategori = k.id_kategori
+            JOIN Makanan AS m ON km.id_makanan = m.id_makanan
             WHERE k.deskripsi_makanan IN ({placeholders})
             GROUP BY m.nama_makanan
             HAVING COUNT(DISTINCT k.deskripsi_makanan) = {len(keywords)}
