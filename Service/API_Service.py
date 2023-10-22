@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-MAIN_SERVER_URL = 'https://8cjrhv6h-8000.asse.devtunnels.ms/api/bot'  # Ganti dengan alamat server Flask utama Anda
+MAIN_SERVER_URL = 'https://8cjrhv6h-8000.asse.devtunnels.ms/send-message'  # Ganti dengan alamat server Flask utama Anda
 Database_URL = 'https://8cjrhv6h-8080.asse.devtunnels.ms/'
 
 # Inisialisasi log chat
@@ -15,9 +15,6 @@ def bot_api():
     try:
         user_message = request.json.get('user_message')
 
-        # Simpan pesan dari pengguna ke log chat
-        chat_log.append({'user': user_message, 'bot': ''})
-
         data = {'user_message': user_message}
         headers = {'Content-Type': 'application/json'}
 
@@ -28,9 +25,14 @@ def bot_api():
             bot_response = response_data.get('response')
 
             # Simpan respon bot ke log chat
-            chat_log[-1]['bot'] = bot_response
+            # chat_log.append({'user': user_message, 'bot': bot_response})
+            # message = ''
 
-            return jsonify({"bot_response": bot_response}), 200
+            # for chat in chat_log:
+            #     message += chat['user'] + '\n' + chat['bot'] + '\n'
+
+            # return jsonify({"response": message}), 200
+            return jsonify({"response": bot_response}), 200
         else:
             return jsonify({"error": f'{response.status_code} - {response.text}'}), response.status_code
 

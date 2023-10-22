@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import bot_responses as botrespon
+import BotRespon as botrespon
 
 app = Flask(__name__)
 bot = botrespon.BotResponses()
