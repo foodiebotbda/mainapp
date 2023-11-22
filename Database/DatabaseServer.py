@@ -25,7 +25,7 @@ def save_makanan():
         save_path = os.path.join(UPLOAD_FOLDER, filename)
         image.save(save_path)
 
-        success = db_manager.save_makanan(nama, tempat, image, harga, kategori_ids)
+        success = db_manager.save_makanan(nama, tempat, filename, harga, kategori_ids)
 
         if success:
             return jsonify({"success": True})
@@ -33,11 +33,42 @@ def save_makanan():
             return jsonify({"success": False, "error": "Failed to save makanan"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+    
+@app.route('/datamakanan', methods=['GET'])
+def get_datamakanan():
+    datamakanan = db_manager.data_makanan()  # Memastikan nama fungsi yang digunakan adalah data_makanan()
+    
+    # Mengonversi data ke dalam format yang diinginkan
+    formatted_data = [
+        {"name": item["name"], "categories": item["categories"]} for item in datamakanan
+    ]
+    return jsonify(formatted_data)
+
 
 @app.route('/kategori_options', methods=['GET'])
 def get_kategori_options():
     kategori_options = db_manager.get_kategori_options()
     return jsonify({"kategori_options": kategori_options})
+
+@app.route('/tempat_options', methods=['GET'])
+def get_tempat_options():
+    tempat_options = db_manager.get_tempat_options()
+    return jsonify({"tempat_options": tempat_options})
+
+@app.route('/tempat_makanan', methods=['GET'])
+def get_tempat_makanan():
+    try:
+        description = request.args.get('tempat')
+        makanan = None
+        makanan = db_manager.search_food_by_tempat(description)
+        if makanan :
+            result_list = [{"nama_makanan": item[0]} for item in makanan]
+            return jsonify(result_list)
+        else:
+            return jsonify({"message": "Data tidak ditemukan"}), 404
+    except Exception as e:
+        traceback.print_exc()  # Mencetak traceback kesalahan untuk debugging
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/kategori_id', methods=['GET'])
 def get_kategori_id():

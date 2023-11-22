@@ -1,5 +1,5 @@
 import mysql.connector
-import hashlib
+from cryptography.fernet import Fernet
 import os
 
 class DatabaseManager:
@@ -11,29 +11,24 @@ class DatabaseManager:
             user="root",  # Ganti dengan nama pengguna Anda
             port=3306,
             password="12345",  # Ganti dengan kata sandi Anda
-            database="foodiebot2"  # Ganti dengan nama database yang ingin Anda gunakan
+            database="foodie"  # Ganti dengan nama database yang ingin Anda gunakan
         )
         self.cursor = self.connection.cursor()
-
-    def hash_gambar(self, image_binary):
-        # Menghitung hash dari gambar_binary
-        return hashlib.md5(image_binary).hexdigest()
+        self.key = (b'bWP-ZLdoHNJ7c5ugSYBcelI7gKBC1OrJooAeUokxiqg=')
     
-    def generate_unique_filename(filename):
-        import uuid
-        _, ext = os.path.splitext(filename)
-        unique_filename = str(uuid.uuid4()) + ext
-        
-        return unique_filename
-
-    def save_makanan(self, nama, tempat, image, harga, kategori_ids):
+    def decrypt_string(self,encrypted_string):
+        f = Fernet(self.key)
+        decrypted = f.decrypt(encrypted_string).decode()
+        return decrypted
+    
+    def save_makanan(self, nama, tempat, filename, harga, kategori_ids):
         try:
             # Menghitung hash dari gambar
-            image_binary = image.read()  # Membaca gambar sebagai biner
-            hash_gambar = self.hash_gambar(image_binary)
+            f = Fernet(self.key)
+            encrypted = f.encrypt(filename.encode())
 
             self.cursor.execute("INSERT INTO Makanan (nama_makanan, tempat, gambar, harga) VALUES (%s, %s, %s, %s)",
-                                (nama, tempat, hash_gambar, harga))
+                                (nama, tempat, encrypted, harga))
             self.connection.commit()
             id_makanan = self.cursor.lastrowid
 
@@ -56,7 +51,29 @@ class DatabaseManager:
         except mysql.connector.Error as e:
             print("Error:", str(e))
             return []
+        
+    def get_tempat_options(self):
+        try:
+            self.cursor.execute("SELECT tempat FROM makanan")
+            tempat_records = self.cursor.fetchall()
+            tempat_options = [record[0] for record in tempat_records]
+            return tempat_options
+        except mysql.connector.Error as e:
+            print("Error:", str(e))
+            return []
+    
+    def search_food_by_tempat(self, keywords):
+        # Eksekusi pernyataan SQL untuk mencari makanan berdasarkan kata-kunci yang relevan
+        query = """
+            SELECT nama_makanan FROM makanan WHERE tempat = %s
+        """
+        self.cursor.execute(query, (keywords,))
+        result = self.cursor.fetchall()
 
+        return result
+
+        
+    
     def get_kategori_id_by_description(self, description):
         try:
             self.cursor.execute("SELECT id_kategori FROM Kategori WHERE deskripsi_makanan = %s", (description,))
