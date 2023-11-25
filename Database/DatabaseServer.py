@@ -76,6 +76,14 @@ def get_kategori_id():
     id_kategori = db_manager.get_kategori_id_by_description(description)
     return jsonify({"id_kategori": id_kategori})
 
+@app.route('/getdata', methods=['GET'])
+def get_data():
+    try:
+        result = db_manager.get_data()
+        return jsonify({"result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+
 @app.route('/search_food', methods=['GET'])
 def search_food():
     try:

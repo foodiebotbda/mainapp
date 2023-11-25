@@ -61,6 +61,23 @@ class DatabaseManager:
         except mysql.connector.Error as e:
             print("Error:", str(e))
             return []
+        
+    def get_data(self):
+        try:
+
+            query = """
+                SELECT k.deskripsi_makanan, m.nama_makanan, m.tempat, m.harga
+                FROM kategori k
+                JOIN kategori_makanan km ON k.id_kategori = km.id_kategori
+                JOIN makanan m ON km.id_makanan = m.id_makanan
+            """
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            return result
+        
+        except mysql.connector.Error as e:
+            print("Error:", str(e))
+            return []
     
     def search_food_by_tempat(self, keywords):
         # Eksekusi pernyataan SQL untuk mencari makanan berdasarkan kata-kunci yang relevan
